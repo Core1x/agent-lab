@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f6f8">
+  <meta name="description" content="可视化搭建和模拟 AI 智能体，探索工作流、工具、MCP、Skill、插件、记忆与协作。">
+  <title>Agent Lab · 智能体实验室</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="data.js"></script>
+  <script defer src="engine.js"></script>
+  <script defer src="theater.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="./index.html" aria-label="Agent Lab 首页"><span class="brand-mark">a<span>·</span></span><span>agent<span class="brand-light">lab</span></span><span class="brand-divider"></span><span class="brand-cn">智能体实验室</span></a>
+    <div class="header-actions"><span class="simulation-badge"><span></span> 交互式模拟</span><button class="button button-quiet" id="guide-button" type="button">使用指南 <span class="keycap">?</span></button><button class="button button-quiet" id="export-button" type="button">导出配置</button><button class="icon-button" id="import-button" type="button" aria-label="导入配置"><span data-icon="upload"></span></button></div>
+  </header>
+  <main class="app-main">
+    <section class="intro-row"><div><div class="eyebrow">BUILD · RUN · UNDERSTAND</div><h1>看见智能体，<span>如何完成任务。</span></h1><p>选配能力，运行任务，沿着每一条路径理解它的工作方式。</p></div><div class="intro-numbers"><div><strong>08</strong><span>工作流模式</span></div><span class="number-divider"></span><div><strong>10</strong><span>演示场景</span></div></div></section>
+    <section class="scenario-strip" aria-label="当前场景"><div class="scenario-current"><span class="scenario-icon" id="scenario-icon"></span><div><div class="eyebrow">正在探索 <span id="scenario-number">SCENARIO 01</span></div><strong id="scenario-name">联网研究</strong><span id="scenario-tag">从资料到结论</span></div></div><div class="scenario-strip-right"><div class="recipe-summary" id="recipe-summary"></div><button class="button button-white" id="scenarios-button" type="button"><span data-icon="grid"></span> 更换场景 <span>↗</span></button></div></section>
+    <div class="workspace">
+      <aside class="config-panel panel" aria-labelledby="config-heading">
+        <div class="panel-heading"><div><span class="section-index">01</span><h2 id="config-heading">组装智能体</h2></div><button class="text-button" id="reset-config" type="button">恢复预设</button></div>
+        <div class="config-basics"><label class="field-label" for="workflow-select">工作流模式 <span>HOW IT WORKS</span></label><select id="workflow-select"></select><p class="field-hint" id="workflow-desc"></p><label class="field-label" for="task-input">任务 <span>WHAT TO DO</span></label><textarea id="task-input" rows="3" maxlength="3000"></textarea></div>
+        <div class="config-tabs" role="tablist" aria-label="能力配置"><button role="tab" aria-selected="true" aria-controls="tools-panel" id="tab-tools" data-tab="tools" type="button">工具 <span id="tool-count">3</span></button><button role="tab" aria-selected="false" aria-controls="components-panel" id="tab-components" data-tab="components" type="button">组件</button><button role="tab" aria-selected="false" aria-controls="strategy-panel" id="tab-strategy" data-tab="strategy" type="button">策略</button></div>
+        <div class="config-content">
+          <section id="tools-panel" role="tabpanel" aria-labelledby="tab-tools"><div class="small-explainer">工具负责动作，接入方式标在右侧。<br>已选工具只在需要时调用。</div><div id="tool-library"></div></section>
+          <section id="components-panel" role="tabpanel" aria-labelledby="tab-components" hidden><div class="small-explainer">为执行循环加入方法、上下文与控制。</div><div id="component-library"></div><div class="subsection-label">插件包 <span>一组选配能力</span></div><div id="plugin-library"></div><p class="field-hint plugin-note">插件可提供工具、Skill、Hooks 和子智能体配置。展开查看组成，可单独停用其中的能力。</p></section>
+          <section id="strategy-panel" role="tabpanel" aria-labelledby="tab-strategy" hidden>
+            <label class="field-label" for="model-select">模型策略</label><select id="model-select"><option value="balanced">通用 · 平衡</option><option value="fast">高效 · 快速</option><option value="multimodal">多模态 · 图像与文字</option></select><p class="field-hint">影响示例耗时与输入能力，不代表真实模型性能。</p>
+            <label class="field-label" for="trigger-select">任务入口</label><select id="trigger-select"><option value="manual">用户输入</option><option value="schedule">定时事件</option><option value="webhook">Webhook 事件</option></select>
+            <label class="field-label" for="retry-select">失败重试上限</label><select id="retry-select"><option value="0">不重试</option><option value="1">最多 1 次</option><option value="2">最多 2 次</option><option value="3">最多 3 次</option></select><p class="field-hint">本版故障注入一次；权限拒绝不会自动重试。</p>
+            <label class="field-label" for="loop-select">工具／评审循环上限</label><select id="loop-select"><option value="1">1 轮</option><option value="2">2 轮</option><option value="3">3 轮</option><option value="4">4 轮</option><option value="5">5 轮</option></select>
+            <label class="field-label" for="parallel-select">并行模式</label><select id="parallel-select"><option value="section">分工后聚合</option><option value="vote">独立评审后投票</option></select>
+            <label class="field-label" for="rag-select">检索模式</label><select id="rag-select"><option value="agentic">按需检索 · Agentic RAG</option><option value="fixed">先检索再生成 · 固定 RAG</option></select>
+            <label class="field-label" for="output-select">输出格式</label><select id="output-select"><option value="text">可读文本</option><option value="json">结构化 JSON</option></select>
+            <details class="custom-plan"><summary>自定义工具步骤 <span>进阶实验</span></summary><p class="field-hint">指定本次要执行的工具，可演练浏览器、SQL、多模态等能力。适用于工具循环、串行与计划模式，最多 8 步。</p><div id="custom-plan-list"></div><label class="sr-only" for="plan-add-tool">选择执行工具</label><div class="plan-add"><select id="plan-add-tool"></select><button class="icon-button" id="plan-add-button" type="button" aria-label="添加工具步骤">+</button></div><button class="text-button" id="plan-clear" type="button">恢复场景步骤</button></details>
+          </section>
+        </div>
+        <div class="config-footer"><span data-icon="layers"></span><span id="config-footer-text">能力已就绪</span><span class="tiny-dot"></span></div>
+      </aside>
+      <section class="flow-panel panel" aria-labelledby="flow-heading">
+        <div class="panel-heading"><div><span class="section-index">02</span><h2 id="flow-heading">运行现场</h2><span class="live-indicator" id="live-indicator">READY</span></div><button class="button button-quiet compare-trigger" id="compare-button" type="button"><span data-icon="compare"></span> 配置对比</button></div>
+        <div class="flow-toolbar"><div><span class="flow-symbol" id="flow-symbol">↻</span><div><strong id="flow-name">工具调用循环</strong><span id="flow-subtitle">TOOL LOOP</span></div></div><div class="fault-control"><span data-icon="bolt"></span><select id="fault-select" aria-label="故障注入"></select></div></div>
+        <div class="fault-details" id="fault-details" hidden><label for="fault-target">目标工具</label><select id="fault-target"></select><span id="fault-description"></span></div>
+        <div class="flow-view-bar"><div role="tablist" aria-label="演示视图"><button id="view-theater" role="tab" aria-selected="true" aria-controls="agent-theater" data-view="theater" type="button">动画演示</button><button id="view-graph" role="tab" aria-selected="false" aria-controls="graph-scroll" data-view="graph" type="button">流程全景</button></div><label class="motion-toggle"><input type="checkbox" id="motion-toggle" checked><span>演示动效</span></label></div>
+        <div class="agent-theater" id="agent-theater" role="tabpanel" aria-labelledby="view-theater">
+          <div class="theater-heading"><span class="scene-status" id="scene-status">准备就绪</span><span id="scene-owner">主智能体负责答复</span><span class="scene-counter" id="scene-counter">00 / 30</span></div>
+          <div class="scene-stage" id="scene-stage">
+            <div class="scene-orbit orbit-one"></div><div class="scene-orbit orbit-two"></div><div class="scene-floor"></div>
+            <svg class="scene-signals" id="scene-signals" viewBox="0 0 720 300" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="scene-context" id="scene-context"></div>
+            <div class="scene-core"><div class="actor-orbit"></div><div id="scene-avatar" class="hero-avatar"></div><div class="actor-shadow"></div><strong id="scene-actor">主智能体</strong><span id="scene-role">接收任务 · 选择工具 · 整理结果</span></div>
+            <div class="scene-station" id="scene-station"></div>
+            <span class="scene-spark spark-one">✦</span><span class="scene-spark spark-two">✧</span><span class="scene-spark spark-three">+</span>
+          </div>
+          <div class="scene-caption"><div class="scene-transfer" id="scene-transfer">任务 → 智能体 → 结果</div><h3 id="scene-action">准备好了，从一个任务开始。</h3><p id="scene-explanation">点击开始，观察智能体如何选择工具、获得信息并继续行动。</p><div class="scene-beat"><span id="scene-beat-fill"></span></div></div>
+          <div class="scene-team" id="scene-team"></div>
+          <div class="scene-history"><span class="scene-history-label">刚刚发生</span><div id="scene-history"></div></div>
+          <div class="scene-legend"><span><i></i> 发出调用</span><span><i></i> 返回结果</span><span><i></i> 等待决定</span></div>
+        </div>
+        <div class="graph-live" id="graph-live" hidden><span id="graph-live-avatar"></span><div><small id="graph-live-transfer">准备就绪</small><strong id="graph-live-action">从一个任务开始。</strong></div><span id="graph-live-count">00 / 30</span></div>
+        <div class="graph-scroll" id="graph-scroll" role="tabpanel" aria-labelledby="view-graph" hidden><div class="graph-board" id="graph-board"><svg id="graph-edges" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs></svg><div id="graph-nodes"></div></div></div>
+        <div class="graph-legend" id="graph-legend" hidden><span><i class="legend-model"></i> 决策</span><span><i class="legend-tool"></i> 工具</span><span><i class="legend-context"></i> 上下文</span><span><i class="legend-control"></i> 控制</span><span class="legend-tip">点击节点查看详情</span></div>
+        <div class="run-dock"><div class="run-buttons"><button class="button button-primary" id="run-button" type="button"><span data-icon="play"></span><span id="run-label">开始模拟</span></button><button class="icon-button" id="step-button" type="button" aria-label="单步执行"><span data-icon="step"></span></button><button class="icon-button" id="restart-button" type="button" aria-label="重置运行"><span data-icon="reset"></span></button><div class="speed-control"><label for="speed-select">速度</label><select id="speed-select"><option value="0.65">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></div></div><div class="replay"><span id="replay-label">等待运行</span><input id="replay-range" type="range" min="0" max="1" value="0" aria-label="执行回放位置" disabled><span id="replay-position">0 / 0</span></div></div>
+      </section>
+      <aside class="observer-panel panel" aria-labelledby="observer-heading"><div class="panel-heading"><div><span class="section-index">03</span><h2 id="observer-heading">观察窗口</h2></div><span class="observer-dot"></span></div><div class="observer-tabs" role="tablist" aria-label="观察内容"><button role="tab" aria-selected="true" aria-controls="detail-panel" id="observer-detail" data-observer="detail" type="button">步骤详情</button><button role="tab" aria-selected="false" aria-controls="trace-panel" id="observer-trace" data-observer="trace" type="button">执行记录 <span id="trace-count">0</span></button><button role="tab" aria-selected="false" aria-controls="result-panel" id="observer-result" data-observer="result" type="button">结果</button></div>
+        <section class="observer-content" id="detail-panel" role="tabpanel" aria-labelledby="observer-detail"><div id="step-detail"></div></section>
+        <section class="observer-content" id="trace-panel" role="tabpanel" aria-labelledby="observer-trace" hidden><div id="trace-list"></div></section>
+        <section class="observer-content" id="result-panel" role="tabpanel" aria-labelledby="observer-result" hidden><div id="result-content"></div></section>
+        <div class="approval-card" id="approval-card" hidden><div><span data-icon="user"></span><strong>需要你的决定</strong></div><p>检查当前模拟动作，再决定是否继续。</p><label class="sr-only" for="approval-note">修改说明</label><textarea id="approval-note" rows="2" maxlength="1000" placeholder="可填写修改说明，再批准"></textarea><div><button class="button button-primary" id="approve-button" type="button">批准继续</button><button class="button button-white" id="reject-button" type="button">拒绝</button></div></div>
+        <div class="run-metrics"><div><span>工具调用</span><strong id="metric-tools">00</strong></div><div><span>决策步骤</span><strong id="metric-models">00</strong></div><div><span>模拟耗时</span><strong id="metric-time">0.0<span>s</span></strong></div></div>
+      </aside>
+    </div>
+    <footer class="app-footer"><span><i></i> 所有工具、数据与产物均为模拟 · 无需 API Key</span><button class="text-button" id="sources-button" type="button">概念与参考资料 <span>↗</span></button><span>DESIGNED FOR CURIOSITY</span></footer>
+  </main>
+  <dialog id="scenarios-dialog" class="modal scenarios-modal"><div class="modal-heading"><div><div class="eyebrow">CHOOSE YOUR EXPERIMENT</div><h2>从一个场景开始。</h2><p>每个场景都有完整路径，也能自由调整配置。</p></div><button class="icon-button" data-close type="button" aria-label="关闭场景选择">×</button></div><div id="scenario-grid" class="scenario-grid"></div></dialog>
+  <dialog id="guide-dialog" class="modal guide-modal"><div class="modal-heading"><div><div class="eyebrow">A LITTLE GUIDANCE</div><h2>理解每一步，改变下一步。</h2></div><button class="icon-button" data-close type="button" aria-label="关闭指南">×</button></div><div class="guide-steps"><div><span>01</span><strong>选择场景与模式</strong><p>模式决定分支、循环和委派结构。</p></div><div><span>02</span><strong>选配工具与组件</strong><p>工具完成动作，Skill 提供方法，记忆与上下文保留信息。</p></div><div><span>03</span><strong>运行，然后做个实验</strong><p>暂停、单步或回放；移除工具、注入故障，对比不同路径。</p></div></div><div class="guide-note"><strong>这个实验室展示什么？</strong><p>基于可复现规则的情景模拟，展示高层动作、工具输入输出与状态变化。自由任务文字作为场景上下文，尚未接入真实模型。耗时为示例值，工具不会操作真实系统。</p><strong>几个容易混淆的概念</strong><p>MCP 连接工具、资源和提示模板；插件打包能力；Skill 按需加载方法。子智能体委派保留主管责任，Handoff 转移责任。A2A 连接独立智能体，AG-UI 连接用户界面，ACP 连接编码智能体与编辑器。</p></div><button class="button button-primary" id="guide-start" type="button">开始我的实验 <span>→</span></button></dialog>
+  <dialog id="sources-dialog" class="modal sources-modal"><div class="modal-heading"><div><div class="eyebrow">THE IDEAS BEHIND THE LAB</div><h2>概念与参考资料</h2><p>架构来自公开官方资料，页面行为是教学模拟。</p></div><button class="icon-button" data-close type="button" aria-label="关闭参考资料">×</button></div><div id="sources-list"></div></dialog>
+  <dialog id="compare-dialog" class="modal compare-modal"><div class="modal-heading"><div><div class="eyebrow">SAME TASK · DIFFERENT SETUP</div><h2>让配置差异，变得可见。</h2><p>保存 A 后修改配置，再与当前配置 B 比较。</p></div><button class="icon-button" data-close type="button" aria-label="关闭配置对比">×</button></div><div id="compare-content"></div></dialog>
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div><div class="sr-only" id="live-announcement" aria-live="polite"></div>
+</body>
+</html>
